@@ -1,32 +1,30 @@
 <template>
-  <div class="flex flex-col gap-2">
-    <UserCard v-for="user in users" :user-data="user"/>
+  <div>
+    <div class="flex justify-end mb-1">
+<!--      <NuxtLink to="/cabinet/objects/new">-->
+<!--        <AppButton class="bg-blue-100 border-none">Добавить</AppButton>-->
+<!--      </NuxtLink>-->
+    </div>
+    <div class="flex flex-col gap-2">
+      <UserCard v-for="user in users" :user-data="user"/>
+    </div>
   </div>
 </template>
 
 <script setup>
 import UserCard from "../../components/cards/UserCard";
+import AppButton from "../../components/inputs/buttons/AppButton";
+import {useApiFetch} from "../../composables/useApiFetch";
+import {useAuthStore} from "../../stores/auth";
 
-const testUser = {
-  id: 0,
-  avatar: "https://img.freepik.com/free-photo/handsome-confident-smiling-man-with-hands-crossed-on-chest_176420-18743.jpg?w=2000",
-  name: "Пупкин Владимир Владимирович",
-  createdAt: "02.02.2022",
-  objectsAmount: "4",
-  phoneNumber: "+72525252525",
-  email: "pupkin@gmail.com",
-  vk: "@pupkin",
-  telegram: "@pupkin",
-}
-const users = [
-  testUser,
-  testUser,
-  testUser,
-  testUser,
-  testUser,
-  testUser,
-  testUser,
-]
+const authStore = useAuthStore();
+
+const users = ref([])
+
+onMounted(async () => {
+  users.value = (await useApiFetch('/users/')).filter(user => user.user_login == authStore.user.user_login);
+  console.log(users.value);
+})
 </script>
 
 <style scoped>

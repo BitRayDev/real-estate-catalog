@@ -1,27 +1,43 @@
 import {defineStore} from "pinia";
 import {useRouter} from "nuxt/app";
+import {useApiFetch} from "~/composables/useApiFetch";
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    _isAuthorized: false,
-    _isAdmin: true,
+    user: null,
   }),
   getters: {
-    isAuthorized: (state) => state._isAuthorized,
-    isAdmin: (state) => state._isAdmin,
+    getUser: (state) => state.user,
+    isAuthorized: (state) => Boolean(state.user),
+    isAdmin: (state) => Boolean(state.user.is_active_admin)
   },
   actions: {
-    logIn() {
+    async refreshUser() {
+      this.user = await useApiFetch('/auth/user');
+    },
+    logIn(login, password) {
       const router = useRouter();
 
-      this._isAuthorized = true;
-      router.push("/cabinet/");
+      useApiFetch('/auth/login', {
+        method: 'POST',
+        body: {
+          login: login,
+          password: password,
+        }
+      }).then((res) => {
+        this.refreshUser();
+        router.push('/cabinet/');
+      })
     },
     logOut() {
       const router = useRouter();
 
-      this._isAuthorized = false;
-      router.push("/");
+      useApiFetch('/auth/user', {
+        method: 'DELETE',
+      }).then((res) => {
+        this.refreshUser();
+        router.push('/');
+      })
     }
   },
 })

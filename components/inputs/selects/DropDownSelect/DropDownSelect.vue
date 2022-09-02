@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>{{label}}</p>
+    <p class="text-sm">{{label}}</p>
     <div class="relative">
       <div class="flex items-center gap-2 justify-between px-3 py-1 border border-black/20 rounded-2xl">
         <p class="text-sm">{{ selectedLabel }}</p>
@@ -33,27 +33,30 @@ const emit = defineEmits(['update:modelValue'])
 const props = defineProps({
   label: String,
   options: Array,
-  modelValue: [Object, Array],
+  modelValue: [String, Array],
   multiple: Boolean,
 })
+
 const selected = ref(props.modelValue ?? (props.multiple ? [] : ''));
+watch(() => props.modelValue, (newValue) => selected.value = newValue);
+
 const isExpanded = ref(false);
 
 function onOptionClick(option) {
   if (props.multiple) {
-    if (selected.value.includes(option)) {
+    if (selected.value.includes(option.value)) {
       selected.value = selected.value.filter(selectedOption => selectedOption.value !== option.value);
     } else {
       selected.value = [
         ...selected.value,
-        option
+        option.value
       ]
     }
   } else {
-    if (selected.value === option) {
+    if (selected.value === option.value) {
       selected.value = null
     } else {
-      selected.value = option;
+      selected.value = option.value;
     }
     isExpanded.value = false;
   }
@@ -61,20 +64,20 @@ function onOptionClick(option) {
 }
 
 function isOptionChecked(option) {
-  const result = Array.isArray(selected.value) ? selected.value.some((selectedOption) => selectedOption.value === option.value) : selected.value.value == option.value;
+  const result = Array.isArray(selected.value) ? selected.value.includes(option.value) : selected.value == option.value;
   return result;
 }
 
 const selectedLabel = computed(() => {
   if (Array.isArray(selected.value)) {
     if (selected.value.length === 1) {
-      return selected.value[0].label;
+      return props.options.find((option) => option.value === selected.value[0].value)?.label;
     } else if (selected.value.length > 1) {
       return `${selected.value.length} выбрано`
     }
   } else {
     if (selected.value) {
-      return selected.value.label
+      return props.options.find((option) => option.value === selected.value)?.label
     }
   }
 

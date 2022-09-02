@@ -1,77 +1,85 @@
 <template>
-  <div class="flex flex-shrink-0 gap-2 p-4 border border-black/5 shadow-md shadow-black/5 rounded-2xl">
-    <div class="flex-grow">
-      <h2 class="text-2xl">{{ user.name }}</h2>
-      <PropertyList :items="properties">
-        <template #item.value="{ item }">
-          <EditableText :value="item.value" v-if="item.isEditable" @editConfirm="onItemEdited(item, $event)" />
-          <div class="flex items-center gap-1" v-else>
-            <p>{{ item.value }}</p>
-          </div>
-        </template>
-      </PropertyList>
-    </div>
-    <Avatar :src="user.avatar"/>
-  </div>
+  <UserProfile
+      :user="user"
+      :properties="properties"
+      avatar-uploadable
+      @property-edited="editProperty"
+      @avatar-uploaded="onAvatarUploaded"
+  >
+    <template #buttons>
+      <AppButton class="bg-red-500 border-none" @click.native="logOut()">Выйти из аккаунта</AppButton>
+    </template>
+  </UserProfile>
 </template>
 
 <script setup>
-import Avatar from "../../components/avatars/Avatar";
-import PropertyList from "../../components/data-views/property-list/PropertyList";
+import UserProfile from "../../components/UserProfile";
+import {useAuthStore} from "../../stores/auth";
 import AppButton from "../../components/inputs/buttons/AppButton";
-import IconButton from "../../components/inputs/buttons/IconButton";
-import EditableText from "../../components/inputs/text/EditableText";
+import {useApiFetch} from "../../composables/useApiFetch";
+import {useRouter} from "nuxt/app";
+import {formatDate} from "../../utils/format"
+
 
 definePageMeta({
   layout: "cabinet"
 })
 
-const user = {
-  avatar: "https://img.freepik.com/free-photo/handsome-confident-smiling-man-with-hands-crossed-on-chest_176420-18743.jpg?w=2000",
-  name: "Пупкин Владимир Владимирович",
-  createdAt: "02.02.2022",
-  objectsAmount: "4",
-  phoneNumber: "+72525252525",
-  email: "pupkin@gmail.com",
-  vk: "@pupkin",
-  telegram: "@pupkin",
-}
+const authStore = useAuthStore();
+const user = ref({});
 
 const properties = computed(() => {
   return [
     {
+      name: "created_at",
       label: "Дата регистрации",
-      value: user.createdAt,
+      value: formatDate(user.value.created_at),
     },
     {
-      label: "Количество объектов",
-      value: user.createdAt,
-    },
-    {
+      name: "phone_number",
       label: "Номер телефона",
-      value: user.phoneNumber,
+      value: user.value.phone_number,
       isEditable: true,
     },
     {
+      name: "email",
       label: "Email",
-      value: user.email,
-      isEditable: true,
-    },
-    {
-      label: "VK",
-      value: user.vk,
-      isEditable: true,
-    },
-    {
-      label: "Telegram",
-      value: user.telegram,
+      value: user.value.email,
       isEditable: true,
     },
   ]
 })
 
-function onItemEdited(item, newValue) {
-  console.log(newValue)
+onMounted(() => {
+  user.value = authStore.getUser;
+})
+const router = useRouter();
+function editProperty(property, value) {
+  useApiFetch('/auth/user', {
+    method: 'POST',
+    body: {
+      ...user.value,
+      [property.name]: value,
+    }
+  }).then(() => {
+    router.go(0);
+  })
+}
+
+function onAvatarUploaded(file) {
+  const formData = new FormData();
+  formData.append('files', file);
+
+  useApiFetch('/upload', {
+    method: 'POST',
+    body: formData
+  }).then((filenames) => {
+    editProperty({name: 'avatar_url'}, filenames[0])
+  })
+}
+
+function logOut() {
+  authStore.logOut();
 }
 </script>
 

@@ -11,8 +11,8 @@
 
 <script setup>
 const props = defineProps({
-  label: String,
-  value: String,
+  label: [String, Number],
+  value: [String, Number],
 })
 </script>
 

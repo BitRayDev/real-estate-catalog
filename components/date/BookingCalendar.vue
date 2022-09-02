@@ -7,16 +7,18 @@
     </div>
     <div class="grid grid-cols-7 gap-1">
       <p class="text-gray-400 text-sm text-center row-start-1 row-end-1" v-for="weekDayLabel in weekDayLabels">{{ weekDayLabel }}</p>
-      <p
-          class="flex items-center justify-center w-6 aspect-square text-sm text-white text-center rounded-full bg-green-400"
+      <div
+          class="flex flex-col gap-1 items-center justify-center w-12 aspect-square rounded-full bg-green-400 text-white"
           :class="{
              'bg-gray-100 text-gray-500': !isDayAvailableForBooking(day),
              'border-2 border-blue-200': isDayIsToday(day)
           }"
           :style="{gridRow: getDayRow(day), gridColumn: getDayColumn(day)}"
-          v-for="day in getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth())">
-        {{ day }}
-      </p>
+          v-for="day in getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth())"
+      >
+        <p class="text-base text-inherit text-center font-bold leading-none">{{ day }}</p>
+        <p v-if="isDayAvailableForBooking(day)" class="text-xs text-inherit text-center leading-none">{{ getDayPrice(day) }}$</p>
+      </div>
     </div>
   </div>
 </template>
@@ -25,6 +27,22 @@
 import MaterialIcon from "../icons/MaterialIcon";
 import IconButton from "../inputs/buttons/IconButton";
 import {getDayCountingFromMonday, getDaysInMonth} from "../../utils/date";
+
+const props = defineProps({
+  regularPrice: Number,
+  specialPrices: {
+    type: Array,
+    default() {
+      return []
+    }
+  },
+  records: {
+    type: Array,
+    default() {
+      return [];
+    }
+  },
+})
 
 const weekDayLabels = [
   "Пн",
@@ -52,7 +70,6 @@ function getDayColumn(day) {
 
 function getDayRow(day) {
   const row = Math.floor((day - getDayNumber(day) + 5) / 7) + 2;
-  console.log("day: " + day + " column: " + row);
   return row;
 }
 
@@ -60,6 +77,14 @@ function isDayAvailableForBooking(day) {
   const nowDate = new Date();
   if (getFullDateByDay(day) < nowDate)
     return false;
+
+  for(const record of props.records) {
+    if(record.status !== 'accepted')
+      continue;
+
+    if(getFullDateByDay(day) > new Date(record.from) && getFullDateByDay(day) < new Date(record.to))
+      return false;
+  }
 
   return true;
 }
@@ -74,11 +99,21 @@ function isDayIsToday(day) {
 
 function showNextMonth() {
   currentDate.value = new Date(currentDate.value.setMonth(currentDate.value.getMonth() + 1));
-  console.log(currentDate.value);
 }
 
 function showPreviousMonth() {
   currentDate.value = new Date(currentDate.value.setMonth(currentDate.value.getMonth() - 1));
+}
+
+function getDayPrice(day) {
+  const fullDate = getFullDateByDay(day);
+  for(const specialPricePeriod of props.specialPrices) {
+    const fromDate = new Date(specialPricePeriod.from);
+    const toDate = new Date(specialPricePeriod.to);
+    if(fullDate > fromDate && fullDate < toDate)
+      return specialPricePeriod.price;
+  }
+  return props.regularPrice;
 }
 
 const monthAndYearLabel = computed(() => {

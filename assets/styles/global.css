@@ -1,3 +1,7 @@
 * {
     font-family: 'montserrat';
 }
+
+td, th {
+    @apply border p-3
+}

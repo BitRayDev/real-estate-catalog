@@ -14,23 +14,19 @@
   </div>
 </template>
 
-<!--<script>-->
-<!--export default {-->
-<!--  inheritAttrs: false-->
-<!--}-->
-<!--</script>-->
 <script setup>
 import MaterialIcon from "../../icons/MaterialIcon";
 
 const emit = defineEmits(['update:modelValue'])
 const props = defineProps({
   label: String,
-  modelValue: String,
+  modelValue: [String, Number],
   icon: String,
   appendIcon: String,
 })
 
 const inputValue = ref(props.modelValue)
+watch(() => props.modelValue, (newValue) => inputValue.value = newValue)
 
 function onInput(e) {
   inputValue.value = e.target.value;

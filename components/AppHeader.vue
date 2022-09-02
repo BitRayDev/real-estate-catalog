@@ -1,9 +1,9 @@
 <template>
-  <div class="py-4 bg-white shadow-md shadow-black/5">
-    <div class="flex items-center justify-between w-2/3 mx-auto">
-      <NuxtLink class="flex items-end gap-2" to="/">
+  <div class="p-4 bg-white shadow-md shadow-black/5">
+    <div class="flex items-center justify-between gap-4 lg:w-5/6 xl:w-2/3 mx-auto">
+      <NuxtLink class="flex items-center gap-2" to="/">
         <img class="h-8" :src="logo"/>
-        <p class="text-2xl font-semibold leading-snug uppercase">{{ websiteName }}</p>
+        <p class="text-2xl font-semibold leading-none uppercase">{{ websiteName }}</p>
       </NuxtLink>
       <div class="flex gap-2">
         <template v-if="!authStore.isAuthorized">

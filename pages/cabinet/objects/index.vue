@@ -1,30 +1,28 @@
 <template>
-  <div class="grid grid-cols-2 gap-2">
-    <NuxtLink v-for="object in objects" :to="`/objects/${object.id}`">
-      <EstateObjectCard :objectData="object"/>
-    </NuxtLink>
+  <div>
+    <div class="flex justify-end mb-1">
+      <NuxtLink to="/cabinet/objects/new">
+        <AppButton class="bg-green-400 text-white text-xl border-none">Добавить</AppButton>
+      </NuxtLink>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <NuxtLink v-for="object in objects" :to="`/cabinet/objects/${object.estate_object_id}`">
+        <EstateObjectCard :objectData="object"/>
+      </NuxtLink>
+    </div>
   </div>
 </template>
 
 <script setup>
 import EstateObjectCard from "../../../components/cards/EstateObjectCard";
+import AppButton from "../../../components/inputs/buttons/AppButton";
+import {useApiFetch} from "../../../composables/useApiFetch";
 
-const testObject = {
-  name: "Сдам квартиру посуточно",
-  address: "г. Новосибирск, ул. Советская, д.2",
-  price: 250,
-  images: [
-    'https://media.istockphoto.com/photos/beautiful-residential-home-exterior-on-bright-sunny-day-with-green-picture-id1211174464?k=20&m=1211174464&s=612x612&w=0&h=fQ3ahmaJnYcZb0UQtBXvOhcuhHFTgK9BA5Mylic7Gnw='
-  ],
-  area: 70,
-  roomsAmount: 3,
-}
-const objects = [
-  testObject,
-  testObject,
-  testObject,
-  testObject,
-]
+const objects = ref([]);
+
+onMounted(async () => {
+  objects.value = await useApiFetch('/auth/user/objects');
+})
 </script>
 
 <style scoped>

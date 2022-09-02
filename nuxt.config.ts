@@ -2,9 +2,10 @@ import { defineNuxtConfig } from 'nuxt'
 
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 export default defineNuxtConfig({
-  app: {
-    baseURL: "/real-estate/"
+  publicRuntimeConfig: {
+    apiUrl: '' // setting `API_BASE` in your `.env` will override this
   },
+  ssr: false,
   components: false,
   css: [
     '@/assets/fonts/montserrat/stylesheet.css',

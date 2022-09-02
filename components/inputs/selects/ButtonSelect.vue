@@ -1,10 +1,10 @@
 <template>
   <div>
-    <p v-if="label">{{ label }}</p>
+    <p class="text-sm" v-if="label">{{ label }}</p>
     <div class="flex gap-1 flex-wrap">
-      <AppButton v-for="item in options" :class="getItemClass(item)" @click.native="onOptionClick(item)">
+      <AppButton v-for="option in options" :class="getOptionClass(option)" @click.native="onOptionClick(option)">
         <p class="text-sm">
-          {{ item.label }}
+          {{ option.label }}
         </p>
       </AppButton>
     </div>
@@ -18,34 +18,35 @@ const emit = defineEmits(['update:modelValue'])
 const props = defineProps({
   label: String,
   options: Array,
-  modelValue: [Object, Array],
+  modelValue: [String, Array],
   multiple: Boolean,
 })
 const selected = ref(props.modelValue ?? (props.multiple ? [] : ''));
+watch(() => props.modelValue, (newValue) => selected.value = newValue);
 
 function onOptionClick(option) {
   if (props.multiple) {
-    if (selected.value.includes(option)) {
-      selected.value = selected.value.filter(selectedItem => selectedItem.value !== option.value);
+    if (selected.value.includes(option.value)) {
+      selected.value = selected.value.filter(selectedItem => selectedItem !== option.value);
     } else {
       selected.value = [
         ...selected.value,
-        option
+        option.value
       ]
     }
   } else {
-    if (selected.value === option) {
+    if (selected.value === option.value) {
       selected.value = null
     } else {
-      selected.value = option;
+      selected.value = option.value;
     }
   }
   emit('update:modelValue', selected.value);
 }
 
-function getItemClass(item) {
+function getOptionClass(option) {
   return {
-    '!border-blue-400': Array.isArray(selected.value) ? selected.value.includes(item) : selected.value == item,
+    '!border-blue-400': Array.isArray(selected.value) ? selected.value.includes(option.value) : selected.value == option.value,
   }
 }
 </script>
